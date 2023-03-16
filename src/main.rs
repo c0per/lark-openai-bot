@@ -36,6 +36,7 @@ impl TenantToken {
 #[derive(Clone)]
 struct AppStateInner {
     tenant_token: TenantToken,
+    openai: async_openai::Client,
 }
 
 type AppState = Arc<Mutex<AppStateInner>>;
@@ -76,10 +77,13 @@ async fn get_tenant_token() -> TenantToken {
 
 #[tokio::main]
 async fn main() {
+    let openai = async_openai::Client::new();
+
     let app = Router::new().nest(
         "/lark",
         lark::router().with_state(Arc::new(Mutex::new(AppStateInner {
             tenant_token: TenantToken::init().await,
+            openai,
         }))),
     );
 
